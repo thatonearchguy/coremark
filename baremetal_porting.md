@@ -11,7 +11,7 @@ CoreMark can be used with microcontrollers / embedded processor devices. Before 
 
 The CoreMark execution needs to execute for at least 10 seconds. Therefore when selecting a timer peripheral for timing measurement, you need to ensure that the timer can measure the whole duration of the coremark execution. For example, let's say you are using a Cortex-M based microcontroller and use the SysTick timer as timing reference. If the device is running at 100MHz and the SysTick is setup to run using the processor's clock, the longest time that the timer can count is 0.16777 second before it reaches zero. To measure the execution time, you could setup the SysTick timer to interrupt at a rate of 1KHz, and increment a counter variable inside the interrupt service routine. With this arrangement, there is some software overhead but the result should still be quite accurate.
 
-You also need to estimate a minimum number of iterations before your start. The number of iterations can be set using a C preprocessing macro "ITERATIONS". For a processor with around 4 CoreMark/MHz and running at 100MHz, you need an iteration of at least 4 (CoreMark/MHz) x100 (MHz) x 10 (seconds) = 4000 iterations.
+You also need to estimate a minimum number of iterations before your start. The number of iterations can be set using a C preprocessing macro "ITERATIONS". For a processor with around 4 CoreMark/MHz and running at 100MHz, you need an iteration count of at least 4 (CoreMark/MHz) x100 (MHz) x 10 (seconds) = 4000 iterations.
 
 Incorrect timing reference is a common error, therefore, please test your timing measurement code. For example, by creating a small program that wait for 10 seconds and compare that to an external timing measurement tool (e.g. stopwatch).
 
@@ -208,7 +208,14 @@ portable_init(core_portable *p, int *argc, char *argv[])
 }
 ```
 
-## Additional considerations
+### Additional considerations
+
+CoreMark demonstrate some performance aspects of the processors, but it might not reflect the performance of your applications in the real world. For example, the critical workloads in CoreMark does not contain floating-point operations, and is not data intensive. Also, because the memory footprint is quite small (This is necessary to allow CoreMark to be used in small, low-cost microcontrollers with limited memory sizes), when using CoreMark on a high-end processor system, the benchmark can easily fit into the level 1 caches and the performance of the memory system outside the L1 cache is not tested.  [SPEC](https://spec.org) has other benchmarks that are suitable for testing the performance of high-end processor systems.
+
+If you are using a microcontroller with flash memory for program storage, and if the processor inside comes with Instruction and Data caches, in most cases you need to enable both I and D caches to get the best performance. This is because the program image contains both program instructions and constant data.
 
 Typically the CoreMark project fit within 32KB of ROM/flash and use less than 32KB of RAM. The stack and heap sizes inside the RAM is dependent on the processor architecture as well as the toolchain being used. For example, some toolchains could use more RAM for printf and floating-point library. In toolchains for Arm Cortex-M based microcontrollers, typically the CoreMark uses less than 4KB of stack and 4KB of heap space.
+
+Many microcontroller vendors and some toolchain vendors provide application notes to explain to their customers how to setup CoreMark project to get the best performance.
+
 
