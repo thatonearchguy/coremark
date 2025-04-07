@@ -1,10 +1,12 @@
-# Using CoreMark with bare-bones systems
+# Using CoreMark with bare-bone systems
 
-## Definition of bare-bones systems
+This file only contain information for porting CoreMark to bare-bone systems. For other information (e.g. run rules) please see [README.md](README.md).
 
-The term bare-bones here mean a systems that is bare minimum, and only provide the essential parts. A bare-bone processor system might not have an rich-OS (e.g. Linux, Windows), and in that case the system can also be referred as bare-metal.
+## Definition of bare-bone systems
 
-The bare-bones folder in the CoreMark repository provides the bare minimum to allow CoreMark to be ported to a processor system. As the code inside does not have dependency on OS, it is the best starting point for porting CoreMark to a baremetal system, such as a microcontroller or an embedded processor.
+The term bare-bones here mean systems that are bare minimum, and only provide the essential parts. A bare-bone processor system might not have an rich-OS (e.g. Linux, Windows), and in that case the system can also be referred as bare-metal.
+
+The bare-bones folder in the CoreMark repository provides the bare minimum to allow CoreMark to be ported to a processor system. As the code inside does not have any dependency on OS, it is the best starting point for porting CoreMark to a baremetal system where OS is not used, such as a microcontroller or an embedded processor.
 
 ## Overview
 

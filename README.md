@@ -7,12 +7,14 @@ For a more compute-intensive version of CoreMark that uses larger datasets and e
 
 # Building and Running
 	
-To build and run the benchmark, type 
+In a typical Linux system, to build and run the benchmark, type 
 
 `> make`
 
 Full results are available in the files `run1.log` and `run2.log`. CoreMark result can be found in `run1.log`.
-	
+
+For information on using CoreMark with microcontrollers or embedded processor systems with an OS, please see [barebones_porting.md](./barebones_porting.md).
+
 ## Cross Compiling
 
 For cross compile platforms please adjust `core_portme.mak`, `core_portme.h` (and possibly `core_portme.c`) according to the specific platform used. When porting to a new platform, it is recommended to copy one of the default port folders  (e.g. `mkdir <platform> && cp linux/* <platform>`), adjust the porting files, and run:
