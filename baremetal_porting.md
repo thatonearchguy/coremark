@@ -9,7 +9,14 @@ CoreMark can be used with microcontrollers / embedded processor devices. Before 
 - printf support
 - timer support (e.g. base on a reference that has a constant clock frequency)
 
-The CoreMark execution needs to execute for at least 10 seconds. Therefore when selecting a timer peripheral for timing measurement, you need to ensure that the timer can measure the whole duration of the coremark execution. For example, let's say you are using a Cortex-M based microcontroller and use the SysTick timer as timing reference. If the device is running at 100MHz and the SysTick is setup to run using the processor's clock, the longest time that the timer can count is 0.16777 second before it reaches zero. To measure the execution time, you could setup the SysTick timer to interrupt at a rate of 1KHz, and increment a counter variable inside the interrupt service routine. With this arrangement, there is some software overhead but the result should still be quite accurate.
+The CoreMark execution needs to execute for at least 10 seconds. Therefore when selecting a timer peripheral for timing measurement, you need to ensure that the timer can measure the whole duration of the coremark execution. For example, let's say you are using a microcontroller and that has a 24-bit timer, and use the 24-bit timer as the timing reference. If the device is running at 100MHz and the timer is setup to run using the processor's clock, the longest time that the timer can count is 0.16777 second before it overflows or reaches zero. To measure the execution time, you could setup that timer to interrupt at a rate of 1KHz, and increment a counter variable inside the interrupt service routine. With this arrangement, there is some software overhead but the result should still be quite accurate. 
+
+If the timer is 32-bit, and providing that:
+
+- the number of iterations is not too high, and
+- the timer's frequency is not too high,
+
+then it is possible to measure the entire execution period without timer overflow/underflow. For example, if a 32-bit timer increment/decrement at 100MHz, it takes 42.95 seconds to overflow/underflow. So it is possible to use the timer's value directly if the execution time is between 10 to 42.95 seconds.
 
 You also need to estimate a minimum number of iterations before your start. The number of iterations can be set using a C preprocessing macro "ITERATIONS". For a processor with around 4 CoreMark/MHz and running at 100MHz, you need an iteration count of at least 4 (CoreMark/MHz) x100 (MHz) x 10 (seconds) = 4000 iterations.
 
@@ -51,74 +58,23 @@ Several C macros require update:
 |HAS_STDIO| 1 |
 |HAS_PRINTF| 1 |
 
-The next section in the file is dependent on the C compiler that you are using. For example, the following code could be used for the Arm Compiler 5/6
+The next section in the file is dependent on the C compiler that you are using. The original code below utilizes compiler predefine macros for GCC __GNUC__ and __VERSION__ to provides printed message of compiler's version.  (See [GCC documentation page](https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html) for additional information.) 
 
 ```C
 #ifndef COMPILER_VERSION
-  #ifdef __GNUC__
-    #define COMPILER_VERSION "GCC"__VERSION__
-  #elif defined __ARMCC_VERSION
-    /* Arm Compiler */
-    #if (__ARMCC_VERSION > 6000000)
-	   // ARM compiler 6
-      #define COMPILER_VERSION "ARM compiler 6"
-    #else
-	   // ARM compiler 5
-      #define _VERSION_STRING(x) #x
-      #define _VER_STRING(x) "armcc "##_VERSION_STRING(x)
-      #define COMPILER_VERSION _VER_STRING(__ARMCC_VERSION)
-    #endif
-  #elif defined __ICCARM__
-    #define _VERSION_STRING(x) #x
-    #define _VER_STRING(x) "ICC "##_VERSION_STRING(x)
-    #define COMPILER_VERSION _VER_STRING(__VER__)
-  #else
-    #define COMPILER_VERSION "Please put compiler version here (e.g. gcc 4.1)"
-  #endif
+#ifdef __GNUC__
+#define COMPILER_VERSION "GCC"__VERSION__
+#else
+#define COMPILER_VERSION "Please put compiler version here (e.g. gcc 4.1)"
 #endif
-
+#endif
 #ifndef COMPILER_FLAGS
-  #ifdef  __ARMCC_VERSION
-    #if (__ARMCC_VERSION > 6000000)
-      /* ARM Compiler 6 */
-      #if defined (__OPTIMIZE_SIZE__)&&(__OPTIMIZE_SIZE__==1U)
-        #define COMPILER_FLAGS "-Oz"
-      #else
-        #define COMPILER_FLAGS "-O3"
-      #endif
-    #else
-      /* ARM Compiler 5 */
-      #ifdef __OPTIMISE_SPACE
-        #define _OPTIMISE_LEVEL_STRING(x) #x
-        #define _OPTIMISE_OPTION_STRING(x) "-Ospace -O"##_OPTIMISE_LEVEL_STRING(x)
-        #define COMPILER_FLAGS _OPTIMISE_OPTION_STRING(__OPTIMISE_LEVEL)
-      #elif __OPTIMISE_TIME
-        #define _OPTIMISE_LEVEL_STRING(x) #x
-        #define _OPTIMISE_OPTION_STRING(x) "-Otime -O"##_OPTIMISE_LEVEL_STRING(x)
-        #define COMPILER_FLAGS _OPTIMISE_OPTION_STRING(__OPTIMISE_LEVEL)
-      #else
-        #define _OPTIMISE_LEVEL_STRING(x) #x
-        #define _OPTIMISE_OPTION_STRING(x) "-O"##_OPTIMISE_LEVEL_STRING(x)
-        #define COMPILER_FLAGS _OPTIMISE_OPTION_STRING(__OPTIMISE_LEVEL)
-      #endif
-    #endif
-  #elif defined __ICCARM__
-    #define COMPILER_FLAGS "-o3" /* "Please put compiler flags here (e.g. -o3)" */
-  #else
-    #define COMPILER_FLAGS "-o3" /* "Please put compiler flags here (e.g. -o3)" */
-    //#define COMPILER_FLAGS \
-    //FLAGS_STR /* "Please put compiler flags here (e.g. -o3)" */
-  #endif
+#define COMPILER_FLAGS \
+    FLAGS_STR /* "Please put compiler flags here (e.g. -o3)" */
 #endif
 ```
-We also need to add the MEM_LOCATION_UNSPEC macro:
+You can insert additional compiler specific information using compiler predefine macros for the toolchain that you use. For example, information about LLVM predefined macros is available [here](https://clang.llvm.org/docs/LanguageExtensions.html#builtin-macros).
 
-```C
-#ifndef MEM_LOCATION
-  #define MEM_LOCATION "STACK"
-  #define MEM_LOCATION_UNSPEC 0
-#endif
-```
 And finally, set MAIN_HAS_NOARGC:
 
 ```C
