@@ -1,8 +1,12 @@
-# CoreMark
+# Using CoreMark with bare-bones systems
 
-## Using CoreMark with microcontrollers / embedded processors
+## Definition of bare-bones systems
 
-### Overview
+The term bare-bones here mean a systems that is bare minimum, and only provide the essential parts. A bare-bone processor system might not have an rich-OS (e.g. Linux, Windows), and in that case the system can also be referred as bare-metal.
+
+The bare-bones folder in the CoreMark repository provides the bare minimum to allow CoreMark to be ported to a processor system. As the code inside does not have dependency on OS, it is the best starting point for porting CoreMark to a baremetal system, such as a microcontroller or an embedded processor.
+
+## Overview
 
 CoreMark can be used with microcontrollers / embedded processor devices. Before you start porting CoreMark, please setup a project environment that provides:
 
@@ -46,7 +50,7 @@ In your project setup you also need to define pre-processing macros:
 |STANDALONE| Set to indicate Standalone environment |
 |PERFORMANCE_RUN / VALIDATION_RUN | Set to 1 |
 
-### Modifications of core_portme.h
+## Modifications of core_portme.h
 
 Several C macros require update:
 
@@ -58,7 +62,7 @@ Several C macros require update:
 |HAS_STDIO| 1 |
 |HAS_PRINTF| 1 |
 
-The next section in the file is dependent on the C compiler that you are using. The original code below utilizes compiler predefine macros for GCC __GNUC__ and __VERSION__ to provides printed message of compiler's version.  (See [GCC documentation page](https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html) for additional information.) 
+The next section in the file is dependent on the C compiler that you are using. The original code below utilizes compiler predefine macros for GCC **\_\_GNUC\_\_** and **\_\_VERSION\_\_** to provides printed message of compiler's version.  (See [GCC documentation page](https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html) for additional information.) 
 
 ```C
 #ifndef COMPILER_VERSION
@@ -164,7 +168,7 @@ portable_init(core_portable *p, int *argc, char *argv[])
 }
 ```
 
-### Additional considerations
+## Additional considerations
 
 CoreMark demonstrate some performance aspects of the processors, but it might not reflect the performance of your applications in the real world. For example, the critical workloads in CoreMark does not contain floating-point operations, and is not data intensive. Also, because the memory footprint is quite small (This is necessary to allow CoreMark to be used in small, low-cost microcontrollers with limited memory sizes), when using CoreMark on a high-end processor system, the benchmark can easily fit into the level 1 caches and the performance of the memory system outside the L1 cache is not tested.  [SPEC](https://spec.org) has other benchmarks that are suitable for testing the performance of high-end processor systems.
 
