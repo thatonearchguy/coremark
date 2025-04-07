@@ -89,7 +89,7 @@ And finally, set MAIN_HAS_NOARGC:
 #endif
 ```
 
-### Modifications of core_portme.c
+## Modifications of core_portme.c
 
 Note: The following codes are example. You can change the codes in other ways.
 
