@@ -176,7 +176,7 @@ CoreMark demonstrate some performance aspects of the processors, but it might no
 
 If you are using a microcontroller with flash memory for program storage, and if the processor inside comes with Instruction and Data caches, in most cases you need to enable both I and D caches to get the best performance. This is because the program image contains both program instructions and constant data.
 
-Typically the CoreMark project fit within 32KB of ROM/flash and use less than 32KB of RAM. The stack and heap sizes inside the RAM is dependent on the processor architecture as well as the toolchain being used. For example, some toolchains could use more RAM for printf and floating-point library. In toolchains for Arm Cortex-M based microcontrollers, typically the CoreMark uses less than 4KB of stack and 4KB of heap space.
+Typically the CoreMark project fit within 32KB of ROM/flash and use less than 32KB of RAM. The stack and heap sizes inside the RAM is dependent on the processor architecture as well as the toolchain being used. For example, some toolchains could use more RAM for printf and floating-point library (Note: floating-point operations could be used for benchmark result calculation). In toolchains for typical 32-bit microcontrollers, usually the CoreMark uses less than 4KB of stack and 4KB of heap space.
 
 Many microcontroller vendors and some toolchain vendors provide application notes to explain to their customers how to setup CoreMark project to get the best performance.
 
