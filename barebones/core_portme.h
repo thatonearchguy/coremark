@@ -28,21 +28,21 @@ Original Author: Shay Gal-on
         Define to 1 if the platform supports floating point.
 */
 #ifndef HAS_FLOAT
-#define HAS_FLOAT 1
+#define HAS_FLOAT 0
 #endif
 /* Configuration : HAS_TIME_H
         Define to 1 if platform has the time.h header file,
         and implementation of functions thereof.
 */
 #ifndef HAS_TIME_H
-#define HAS_TIME_H 1
+#define HAS_TIME_H 0
 #endif
 /* Configuration : USE_CLOCK
         Define to 1 if platform has the time.h header file,
         and implementation of functions thereof.
 */
 #ifndef USE_CLOCK
-#define USE_CLOCK 1
+#define USE_CLOCK 0
 #endif
 /* Configuration : HAS_STDIO
         Define to 1 if the platform has stdio.h.
@@ -91,6 +91,7 @@ typedef double         ee_f32;
 typedef unsigned char  ee_u8;
 typedef unsigned int   ee_u32;
 typedef ee_u32         ee_ptr_int;
+typedef unsigned long size_t;
 typedef size_t         ee_size_t;
 #define NULL ((void *)0)
 /* align_mem :
@@ -102,8 +103,8 @@ typedef size_t         ee_size_t;
 /* Configuration : CORE_TICKS
         Define type of return from the timing functions.
  */
-#define CORETIMETYPE ee_u32
-typedef ee_u32 CORE_TICKS;
+#define CORETIMETYPE unsigned long long
+typedef unsigned long long CORE_TICKS;
 
 /* Configuration : SEED_METHOD
         Defines method to get seed values that cannot be computed at compile
@@ -127,7 +128,7 @@ typedef ee_u32 CORE_TICKS;
         MEM_STACK - to allocate the data block on the stack (NYI).
 */
 #ifndef MEM_METHOD
-#define MEM_METHOD MEM_STACK
+#define MEM_METHOD MEM_STATIC
 #endif
 
 /* Configuration : MULTITHREAD
@@ -166,7 +167,7 @@ typedef ee_u32 CORE_TICKS;
    greater then 1.
 */
 #ifndef MAIN_HAS_NOARGC
-#define MAIN_HAS_NOARGC 0
+#define MAIN_HAS_NOARGC 1
 #endif
 
 /* Configuration : MAIN_HAS_NORETURN

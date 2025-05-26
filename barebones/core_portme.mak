@@ -16,21 +16,25 @@
 
 #File : core_portme.mak
 
-# Flag : OUTFLAG
-#	Use this flag to define how to to get an executable (e.g -o)
-OUTFLAG= -o
-# Flag : CC
-#	Use this flag to define compiler to use
-CC 		= gcc
-# Flag : LD
-#	Use this flag to define compiler to use
-LD		= gld
-# Flag : AS
-#	Use this flag to define compiler to use
-AS		= gas
-# Flag : CFLAGS
-#	Use this flag to define compiler options. Note, you can add compiler options from the command line using XCFLAGS="other flags"
-PORT_CFLAGS = -O0 -g
+
+include /f-of-e-tools/tools/sunflower/conf/setup.conf
+
+TREEROOT = $(SUNFLOWERROOT)
+GB3_ROOT = /gb3-resources
+
+TARGET-ARCH	= riscv32-elf
+TARGET		= riscv
+
+PROGRAM		= ./coremark
+PROGRAM-SF	= ./barebones/coremark-sf
+INIT		= ./barebones/init
+INIT-SF		= ./barebones/init-sf
+
+INCLUDE_DIR = ../include
+
+
+
+PORT_CFLAGS = -Os -ffreestanding -nostdlib -nodefaultlibs -fno-builtin -ffunction-sections -fdata-sections -march=rv32i -mabi=ilp32 $(TARGET-ARCH-FLAGS) -Wl,--strip-unneeded
 FLAGS_STR = "$(PORT_CFLAGS) $(XCFLAGS) $(XLFLAGS) $(LFLAGS_END)"
 CFLAGS = $(PORT_CFLAGS) -I$(PORT_DIR) -I. -DFLAGS_STR=\"$(FLAGS_STR)\" 
 #Flag : LFLAGS_END
@@ -40,18 +44,27 @@ SEPARATE_COMPILE=1
 # Flag : SEPARATE_COMPILE
 # You must also define below how to create an object file, and how to link.
 OBJOUT 	= -o
-LFLAGS 	= 
-ASFLAGS =
+LFLAGS 	= -flto --gc-sections -L$(TOOLSLIB)/$(TARGET) -Map $(PROGRAM).map -Tbarebones/sail.ld
+#LFLAGS = -Ttext $(LOADADDR-SF)  -L$(TOOLSLIB)/$(TARGET) -Map $(PROGRAM).map # emulator
+ASFLAGS = -march=rv32i -mabi=ilp32
 OFLAG 	= -o
 COUT 	= -c
 
-LFLAGS_END = 
+SREC2HEX = srec2hex
+LOADADDR-SF = 0x08004000
+
+
 # Flag : PORT_SRCS
 # 	Port specific source files can be added here
 #	You may also need cvt.c if the fcvt functions are not provided as intrinsics by your compiler!
 PORT_SRCS = $(PORT_DIR)/core_portme.c $(PORT_DIR)/ee_printf.c
 vpath %.c $(PORT_DIR)
-vpath %.s $(PORT_DIR)
+vpath %.S $(PORT_DIR)
+
+
+LFLAGS_END = -lc -lgcc
+#LFLAGS_END = -lc -lgcc -lgloss #emulator
+
 
 # Flag : LOAD
 #	For a simple port, we assume self hosted compile and run, no load needed.
@@ -59,11 +72,16 @@ vpath %.s $(PORT_DIR)
 # Flag : RUN
 #	For a simple port, we assume self hosted compile and run, simple invocation of the executable
 
-LOAD = echo "Please set LOAD to the process of loading the executable to the flash"
-RUN = echo "Please set LOAD to the process of running the executable (e.g. via jtag, or board reset)"
+
 
 OEXT = .o
-EXE = .bin
+EXE =
+# FLAG : OPATH
+# Path to the output folder. Default - current folder.
+OPATH = ./
+MKDIR = mkdir -p
+
+
 
 $(OPATH)$(PORT_DIR)/%$(OEXT) : %.c
 	$(CC) $(CFLAGS) $(XCFLAGS) $(COUT) $< $(OBJOUT) $@
@@ -74,14 +92,27 @@ $(OPATH)%$(OEXT) : %.c
 $(OPATH)$(PORT_DIR)/%$(OEXT) : %.s
 	$(AS) $(ASFLAGS) $< $(OBJOUT) $@
 
-# Target : port_pre% and port_post%
-# For the purpose of this simple port, no pre or post steps needed.
 
-.PHONY : port_prebuild port_postbuild port_prerun port_postrun port_preload port_postload
-port_pre% port_post% : 
+PORT_OBJS =\
+	$(INIT).o\
+	$(PORT_SRCS:.c=.o) \
 
-# FLAG : OPATH
-# Path to the output folder. Default - current folder.
-OPATH = ./
-MKDIR = mkdir -p
+
+.PHONY: port_postbuild
+port_postbuild:
+	mkdir -p $(GB3_ROOT)/processor/programs/
+	$(OBJCOPY) -O srec $(PROGRAM) $(PROGRAM).sr
+	$(SREC2HEX) -b 8192 $(PROGRAM).sr
+	cp program.hex $(GB3_ROOT)/processor/programs/
+	cp data.hex $(GB3_ROOT)/processor/programs/
+
+PORT_CLEAN =\
+	init.i *.o $(PROGRAM) $(PROGRAM).sr $(PROGRAM).map \
+	init-sf.i *.o $(PROGRAM-SF) $(PROGRAM-SF).sr $(PROGRAM-SF).map \
+	program.hex data.hex
+
+.PHONY : port_prebuild port_prerun port_postrun port_preload port_postload
+
+
+
 
